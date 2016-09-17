@@ -6,26 +6,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from models import *
 
-@api_view(['GET'])
-def verify(request):
-    # when the endpoint is registered as a webhook, it must echo back
-    # the 'hub.challenge' value it receives in the query arguments
-    if request.GET.get('hub.mode') == "subscribe" and request.GET.get('hub.challenge'):
-        if not request.GET.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
-            return "Verification token mismatch", 403
-        return request.GET.get('hub.challenge'), 200
-
-    return "Hello world", 200
-
-
 @api_view(['GET', 'POST'])
 def webhook(request):
-    log(request)
+    log(request.data)
     if request.method == 'GET':
-        if request.GET.get('hub.mode') == "subscribe" and request.GET.get('hub.challenge'):
+        if request.query_params['hub.mode'] == "subscribe" and request.query_params['hub.challenge']:
             if not request.GET.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
                 return Response("Verification token mismatch", status=403)
-        return Response(request.query_params['hub.challenge'], status=200)
+        return Response(int(str(request.query_params['hub.challenge']).replace('"', '')), status=200)
     elif request.method == 'POST':
         return Response({"message": "OK!"}, status=200)
 
