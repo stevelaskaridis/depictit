@@ -81,10 +81,15 @@ def send_message(recipient_id, message_text):
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
-#
-#
-# if __name__ == '__main__':
-#     app.run(debug=True)
+
+@api_view(['POST'])
+def copy_to_env(request):
+    from shutil import copyfile
+    import os.path
+
+    PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+    copyfile(os.path.join(PROJECT_ROOT, '../to_be_revoked/GoogleAPI.json'), os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+    return Response("OK", status=200)
 
 
 def _create_game(owner_id, no_players):
