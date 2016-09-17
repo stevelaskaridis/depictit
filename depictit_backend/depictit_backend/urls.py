@@ -24,6 +24,6 @@ urlpatterns = [
     url(r'^gen_gc', views.gen_gc),
     # url(r'^upload/(?P<filename>[^/]+)$', views.FileUploadView.as_view()),
     url(r'^webhook', views.webhook),
-    url(r'^copy_to_env', views.copy_to_env),
+    # url(r'^copy_to_env', views.copy_to_env),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
