@@ -23,7 +23,7 @@ def webhook(request):
     elif request.method == 'POST':
         text = request.data['entry'][0]['messaging'][0]['message']['text']
         timestamp = request.data['entry'][0]['time']
-        sender_id = request.data['entry'][0]['messaging'][0]['message']['sender']['id']
+        sender_id = request.data['entry'][0]['messaging'][0]['sender']['id']
 
         if str(text).lower() == 'new game':
             send_message(sender_id, 'How many teams?')
