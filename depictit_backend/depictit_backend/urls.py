@@ -21,6 +21,8 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     url(r'^', include(router.urls)),
+    # url(r'^gen_gc', views.gen_gc),
+    # url(r'^upload/(?P<filename>[^/]+)$', views.FileUploadView.as_view()),
     url(r'^webhook', views.webhook),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

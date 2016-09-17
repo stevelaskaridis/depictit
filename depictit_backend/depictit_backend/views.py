@@ -3,8 +3,11 @@ import sys
 import json
 import requests
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from models import *
+from django.conf import settings
 
 @api_view(['GET', 'POST'])
 def webhook(request):
@@ -86,6 +89,39 @@ def log(message):  # simple wrapper for logging to stdout on heroku
 # if __name__ == '__main__':
 #     app.run(debug=True)
 
+# @api_view(['GET'])
+# def gen_gc(request):
+#     export_filename = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+#
+#     secure_cred = json.dumps({
+#       "type": os.environ["type"],
+#       "project_id": os.environ["project_id"],
+#       "private_key_id": os.environ["private_key_id"],
+#       "private_key": os.environ["private_key"].decode(),
+#       "client_email": os.environ["client_email"],
+#       "client_id": os.environ["client_id"],
+#       "auth_uri": os.environ["auth_uri"],
+#       "token_uri": os.environ["token_uri"],
+#       "auth_provider_x509_cert_url": os.environ["auth_provider_x509_cert_url"],
+#       "client_x509_cert_url": os.environ["client_x509_cert_url"],
+#     })
+#     with open(export_filename, 'w') as f:
+#       f.write(secure_cred)
+#     return Response("OK!", status=200)
+
+# class FileUploadView(APIView):
+#     parser_classes = (FileUploadParser,)
+#
+#     def put(self, request, filename, format=None):
+#         from django.core.files.storage import default_storage
+#         from django.core.files.base import ContentFile
+#         file_obj = request.FILES['file']
+#
+#         path = default_storage.save('tmp/'+filename, ContentFile(file_obj.read()))
+#         from shutil import copyfile
+#         copyfile(os.path.join(settings.MEDIA_ROOT, path), os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+#         return Response(status=204)
+
 
 def _create_game(owner_id, no_players):
     # Search for player with specific owner_id
@@ -107,3 +143,4 @@ def _create_game(owner_id, no_players):
         game = game[0]
 
     return game
+
