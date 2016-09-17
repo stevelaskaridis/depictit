@@ -21,9 +21,9 @@ def webhook(request):
                 return Response("Verification token mismatch", status=403)
         return Response(int(str(request.query_params['hub.challenge']).replace('"', '')), status=200)
     elif request.method == 'POST':
-        text = request['entry'][0]['messaging'][0]['message']['text']
-        timestamp = request['entry'][0]['time']
-        sender_id = request['entry'][0]['messaging'][0]['message']['sender']['id']
+        text = request.data['entry'][0]['messaging'][0]['message']['text']
+        timestamp = request.data['entry'][0]['time']
+        sender_id = request.data['entry'][0]['messaging'][0]['message']['sender']['id']
 
         if str(text).lower() == 'new game':
             send_message(sender_id, 'How many teams?')
