@@ -3,7 +3,18 @@ import os
 
 # Must be set as an environment variable
 PAGE_ACCESS_TOKEN = os.environ['PAGE_ACCESS_TOKEN']
+THREAD_ENDPOINT = "https://graph.facebook.com/v2.6/me/thread_settings?access_token=" + PAGE_ACCESS_TOKEN
 ENDPOINT = "https://graph.facebook.com/v2.6/me/messages?access_token=" + PAGE_ACCESS_TOKEN
+
+
+def send_greeting(greeting_msg):
+    r = requests.post(ENDPOINT, data={
+      "setting_type":"greeting",
+      "greeting":{
+        "text": greeting_msg
+        }
+    })
+    return r
 
 
 def send_message(recipient_user_id, message):
