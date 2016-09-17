@@ -2,12 +2,15 @@ import os
 import sys
 import json
 import requests
+import random
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from models import *
 from django.conf import settings
+from messenger_utils import *
+from google_vision_api import GoogleVisionApi
 
 @api_view(['GET', 'POST'])
 def webhook(request):
@@ -18,6 +21,20 @@ def webhook(request):
                 return Response("Verification token mismatch", status=403)
         return Response(int(str(request.query_params['hub.challenge']).replace('"', '')), status=200)
     elif request.method == 'POST':
+        text = request['entry'][0]['messaging'][0]['message']['text']
+        timestamp = request['entry'][0]['time']
+        sender_id = request['entry'][0]['messaging'][0]['message']['sender']['id']
+
+        if str(text).lower() == 'new game':
+            send_message(sender_id, 'How many teams?')
+        elif text.isdigit() and int(text) > 1:
+            no_players = int(text)
+            _create_game(sender_id, no_players)
+            selection = random.randint(0, 9)
+            gv = GoogleVisionApi()
+            send_generic_template_message(sender_id,
+                                          'some title', "https://fierce-tor-62927.herokuapp.com/static/{selection}.jpg".format(selection=selection),
+                                          gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection)), [])
         return Response({"message": "OK!"}, status=200)
 
 
