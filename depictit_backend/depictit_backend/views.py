@@ -18,11 +18,16 @@ def verify(request):
     return "Hello world", 200
 
 
-@api_view(['POST'])
-# @app.route('/', methods=['POST'])
+@api_view(['GET', 'POST'])
 def webhook(request):
     log(request)
-    return Response({"message": "OK!"})
+    if request.method == 'GET':
+        if request.GET.get('hub.mode') == "subscribe" and request.GET.get('hub.challenge'):
+            if not request.GET.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
+                return "Verification token mismatch", 403
+        return request.GET.get('hub.challenge'), 200
+    elif request.method == 'POST':
+        return Response({"message": "OK!"})
 
 #     # endpoint for processing incoming messaging events
 #
