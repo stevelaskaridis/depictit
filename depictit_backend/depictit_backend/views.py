@@ -3,8 +3,11 @@ import sys
 import json
 import requests
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from models import *
+from django.conf import settings
 
 @api_view(['GET', 'POST'])
 def webhook(request):
@@ -17,44 +20,7 @@ def webhook(request):
     elif request.method == 'POST':
         return Response({"message": "OK!"}, status=200)
 
-#     # endpoint for processing incoming messaging events
-#
-#     # data = request.get_json()
-#     data = request.body
-#     log(
-#         data)  # you may not want to log every incoming message in production, but it's good for testing
-#
-#     if data["object"] == "page":
-#
-#         for entry in data["entry"]:
-#             for messaging_event in entry["messaging"]:
-#
-#                 if messaging_event.get("message"):  # someone sent us a message
-#
-#                     sender_id = messaging_event["sender"][
-#                         "id"]  # the facebook ID of the person sending you the message
-#                     #    recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
-#                     message_text = messaging_event["message"]["text"]  # the message's text
-#                     if message_text == "Start game":
-#                         send_message(sender_id, "Choose the number of the players")
-#                     if message_text == "Hi":
-#                         send_message(sender_id, "Hi")
-#                     if message_text.isdigit():
-#                         send_message(sender_id, "Starting game with " + message_text + " players")
-#
-#                 if messaging_event.get("delivery"):  # delivery confirmation
-#                     pass
-#
-#                 if messaging_event.get("optin"):  # optin confirmation
-#                     pass
-#
-#                 if messaging_event.get(
-#                         "postback"):  # user clicked/tapped "postback" button in earlier message
-#                     pass
-#
-#     return "ok", 200
-#
-#
+
 def send_message(recipient_id, message_text):
     log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
@@ -83,13 +49,37 @@ def log(message):  # simple wrapper for logging to stdout on heroku
     sys.stdout.flush()
 
 @api_view(['POST'])
-def copy_to_env(request):
-    from shutil import copyfile
-    import os.path
+def gen_gc(request):
+    export_filename = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
 
-    PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-    copyfile(os.path.join(PROJECT_ROOT, '../to_be_revoked/GoogleAPI.json'), os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-    return Response("OK", status=200)
+    secure_cred = json.dumps({
+      "type": os.environ["type"],
+      "project_id": os.environ["project_id"],
+      "private_key_id": os.environ["private_key_id"],
+      "private_key": os.environ["private_key"].replace('\\n', os.linesep),
+      "client_email": os.environ["client_email"],
+      "client_id": os.environ["client_id"],
+      "auth_uri": os.environ["auth_uri"],
+      "token_uri": os.environ["token_uri"],
+      "auth_provider_x509_cert_url": os.environ["auth_provider_x509_cert_url"],
+      "client_x509_cert_url": os.environ["client_x509_cert_url"],
+    })
+    with open(export_filename, 'w') as f:
+      f.write(secure_cred)
+    return Response("OK!", status=200)
+
+# class FileUploadView(APIView):
+#     parser_classes = (FileUploadParser,)
+#
+#     def put(self, request, filename, format=None):
+#         from django.core.files.storage import default_storage
+#         from django.core.files.base import ContentFile
+#         file_obj = request.FILES['file']
+#
+#         path = default_storage.save('tmp/'+filename, ContentFile(file_obj.read()))
+#         from shutil import copyfile
+#         copyfile(os.path.join(settings.MEDIA_ROOT, path), os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+#         return Response(status=204)
 
 
 def _create_game(owner_id, no_players):
@@ -112,3 +102,4 @@ def _create_game(owner_id, no_players):
         game = game[0]
 
     return game
+
