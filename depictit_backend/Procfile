@@ -1,0 +1,1 @@
+web: gunicorn depictit_backend.wsgi --log-file -
