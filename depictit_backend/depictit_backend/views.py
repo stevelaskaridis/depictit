@@ -84,30 +84,30 @@ def send_message(recipient_id, message_text):
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
-#
-#
-# if __name__ == '__main__':
-#     app.run(debug=True)
 
-# @api_view(['GET'])
-# def gen_gc(request):
-#     export_filename = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
-#
-#     secure_cred = json.dumps({
-#       "type": os.environ["type"],
-#       "project_id": os.environ["project_id"],
-#       "private_key_id": os.environ["private_key_id"],
-#       "private_key": os.environ["private_key"].decode(),
-#       "client_email": os.environ["client_email"],
-#       "client_id": os.environ["client_id"],
-#       "auth_uri": os.environ["auth_uri"],
-#       "token_uri": os.environ["token_uri"],
-#       "auth_provider_x509_cert_url": os.environ["auth_provider_x509_cert_url"],
-#       "client_x509_cert_url": os.environ["client_x509_cert_url"],
-#     })
-#     with open(export_filename, 'w') as f:
-#       f.write(secure_cred)
-#     return Response("OK!", status=200)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+@api_view(['POST'])
+def gen_gc(request):
+    export_filename = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+
+    secure_cred = json.dumps({
+      "type": os.environ["type"],
+      "project_id": os.environ["project_id"],
+      "private_key_id": os.environ["private_key_id"],
+      "private_key": os.environ["private_key"].replace('\\n', os.linesep),
+      "client_email": os.environ["client_email"],
+      "client_id": os.environ["client_id"],
+      "auth_uri": os.environ["auth_uri"],
+      "token_uri": os.environ["token_uri"],
+      "auth_provider_x509_cert_url": os.environ["auth_provider_x509_cert_url"],
+      "client_x509_cert_url": os.environ["client_x509_cert_url"],
+    })
+    with open(export_filename, 'w') as f:
+      f.write(secure_cred)
+    return Response("OK!", status=200)
 
 # class FileUploadView(APIView):
 #     parser_classes = (FileUploadParser,)
