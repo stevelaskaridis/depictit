@@ -24,10 +24,10 @@ def webhook(request):
     if request.method == 'GET':
         if request.GET.get('hub.mode') == "subscribe" and request.GET.get('hub.challenge'):
             if not request.GET.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
-                return "Verification token mismatch", 403
-        return request.GET.get('hub.challenge'), 200
+                return Response("Verification token mismatch", status=403)
+        return Response(request.query_params['hub.challenge'], status=200)
     elif request.method == 'POST':
-        return Response({"message": "OK!"})
+        return Response({"message": "OK!"}, status=200)
 
 #     # endpoint for processing incoming messaging events
 #
