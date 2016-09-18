@@ -52,7 +52,7 @@ class GoogleVisionApi:
 
 
     def get_photo_desc_from_cloud_storage(self, filename):
-        service_request = self.service.images().annotate(body={
+        service_request = self.vision_service.images().annotate(body={
          "requests": [
           {
            "features": [
