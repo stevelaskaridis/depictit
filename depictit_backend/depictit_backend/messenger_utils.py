@@ -37,7 +37,7 @@ def send_message(recipient_user_id, message):
     return r
 
 
-def send_generic_template_message(recipient_user_id, title, image_url, subtitle, buttons):
+def send_generic_template_message(recipient_user_id, title, image_url, subtitle):
     # buttons = [
     #     {
     #         "type": "web_url",
@@ -72,6 +72,18 @@ def send_generic_template_message(recipient_user_id, title, image_url, subtitle,
                                               "title": title,
                                               "image_url": image_url,
                                               "subtitle": subtitle,
+                                              "buttons": [
+                                                  {
+                                                      "type": "postback",
+                                                      "title": "Check",
+                                                      "payload": "checked"
+                                                  },
+                                                  {
+                                                      "type": "postback",
+                                                      "title": "Skip",
+                                                      "payload": "skipped"
+                                                  }
+                                              ]
                                           }
                                       ]
                                   }

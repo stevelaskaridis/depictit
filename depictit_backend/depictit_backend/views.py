@@ -21,20 +21,47 @@ def webhook(request):
                 return Response("Verification token mismatch", status=403)
         return Response(int(str(request.query_params['hub.challenge']).replace('"', '')), status=200)
     elif request.method == 'POST':
-        text = request.data['entry'][0]['messaging'][0]['message']['text']
-        timestamp = request.data['entry'][0]['time']
-        sender_id = request.data['entry'][0]['messaging'][0]['sender']['id']
+        type = None
+        if request.data['entry'][0]['messaging'][0].get('postback'):
+            type = 'callback'
+        else:
+            type = 'message'
 
-        if str(text).lower() == 'new game':
-            send_message(sender_id, 'How many teams?')
-        elif text.isdigit() and int(text) > 1:
-            no_players = int(text)
-            _create_game(sender_id, no_players)
-            selection = random.randint(0, 9)
-            gv = GoogleVisionApi()
-            send_generic_template_message(sender_id,
-                                          'Selection #{selection}'.format(selection=selection+1), "https://fierce-tor-62927.herokuapp.com/static/{selection}.jpg".format(selection=selection),
-                                          "Don't use the words: " + ", ".join(gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection))), [])
+        if type == 'callback':
+            sender_id = request.data['entry'][0]['sender']['id']
+            payload = request.data['entry'][0]['messaging']['postback']['payload']
+            game = Game.objects.get(owner_id=sender_id)
+            scoreboard = Scoreboard.objects.filter(game=game)
+            curr_scoreboard = scoreboard.filter(team_number=game.turn)
+            if payload == 'checked':
+                curr_scoreboard.team_score += 1
+            elif payload == 'skipped':
+                curr_scoreboard.team_score -= 1
+            curr_scoreboard.save()
+            score = ""
+            for i in curr_scoreboard:
+                score += "Team: {team}, Score: {score}".format(team=i.team_number, score=i.team_score)
+            send_message(sender_id, score)
+            game.increment_turn()
+        if type == 'message':
+            text = request.data['entry'][0]['messaging'][0]['message']['text']
+            timestamp = request.data['entry'][0]['time']
+            sender_id = request.data['entry'][0]['messaging'][0]['sender']['id']
+            player = Game.objects.filter(session_id=sender_id)
+            if str(text).lower() == 'new game':
+                send_message(sender_id, 'How many teams?')
+            elif str(text).lower() == 'end game':
+                game = Game.objects.get(owner_id=sender_id)
+                send_message(sender_id, game.evaluate_winner)
+            elif text.isdigit() and int(text) > 1:
+                no_players = int(text)
+                _create_game(sender_id, no_players)
+                selection = random.randint(0, 9)
+                gv = GoogleVisionApi()
+                send_generic_template_message(sender_id,
+                                              'Selection #{selection}'.format(selection=selection+1), "https://fierce-tor-62927.herokuapp.com/static/{selection}.jpg".format(selection=selection),
+                                              "Don't use the words: " + ", ".join(gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection))))
+
         return Response({"message": "OK!"}, status=200)
 
 

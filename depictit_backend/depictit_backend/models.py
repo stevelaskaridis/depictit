@@ -9,11 +9,11 @@ class Game(models.Model):
     turn = models.IntegerField(default=0)
     no_players = models.IntegerField(default=2)
 
-    def increment_turn():
-      self.turn += 1
+    def increment_turn(self):
+      self.turn = self.turn+1 % self.no_players
       self.save()
 
-    def evaluate_winner():
+    def evaluate_winner(self):
       return Scoreboard.objects.all().filter(game=self).aggregate(Max('team_score')).team_number
 
 
