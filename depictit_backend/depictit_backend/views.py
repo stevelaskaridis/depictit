@@ -9,7 +9,7 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from models import *
 from django.conf import settings
-from messenger_utils import *
+from messenger_utils import send_message, send_generic_template_message
 from google_vision_api import GoogleVisionApi
 
 @api_view(['GET', 'POST'])
@@ -34,32 +34,32 @@ def webhook(request):
             gv = GoogleVisionApi()
             send_generic_template_message(sender_id,
                                           'some title', "https://fierce-tor-62927.herokuapp.com/static/{selection}.jpg".format(selection=selection),
-                                          gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection)), [])
+                                          ", ".join(gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection)), []))
         return Response({"message": "OK!"}, status=200)
 
 
-def send_message(recipient_id, message_text):
-    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
-
-    params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = json.dumps({
-        "recipient": {
-            "id": recipient_id
-        },
-        "message": {
-            "text": message_text
-        }
-    })
-    r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers,
-                      data=data)
-    if r.status_code != 200:
-        log(r.status_code)
-        log(r.text)
+# def send_message(recipient_id, message_text):
+#     log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+#
+#     params = {
+#         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+#     }
+#     headers = {
+#         "Content-Type": "application/json"
+#     }
+#     data = json.dumps({
+#         "recipient": {
+#             "id": recipient_id
+#         },
+#         "message": {
+#             "text": message_text
+#         }
+#     })
+#     r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers,
+#                       data=data)
+#     if r.status_code != 200:
+#         log(r.status_code)
+#         log(r.text)
 
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
