@@ -14,7 +14,7 @@ class Game(models.Model):
       self.save()
 
     def evaluate_winner(self):
-      return Scoreboard.objects.all().filter(game=self).aggregate(Max('team_score')).team_number
+      return Scoreboard.objects.all().filter(game=self).aggregate(Max('team_score'))
 
 
 class Scoreboard(models.Model):

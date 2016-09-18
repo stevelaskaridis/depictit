@@ -26,33 +26,39 @@ def webhook(request):
             type = 'callback'
         else:
             type = 'message'
-
         if type == 'callback':
-            sender_id = request.data['entry'][0]['sender']['id']
+            sender_id = request.data['entry'][0]['messaging'][0]['sender']['id']
             payload = request.data['entry'][0]['messaging']['postback']['payload']
             game = Game.objects.get(owner_id=sender_id)
             scoreboard = Scoreboard.objects.filter(game=game)
-            curr_scoreboard = scoreboard.filter(team_number=game.turn)
+            curr_scoreboard = scoreboard.filter(team_number=game.turn%game.no_players)[0]
             if payload == 'checked':
                 curr_scoreboard.team_score += 1
             elif payload == 'skipped':
                 curr_scoreboard.team_score -= 1
             curr_scoreboard.save()
             score = ""
-            for i in curr_scoreboard:
-                score += "Team: {team}, Score: {score}".format(team=i.team_number, score=i.team_score)
+            for i in scoreboard:
+                score += "Team: {team}, Score: {score}\n".format(team=i.team_number, score=i.team_score)
             send_message(sender_id, score)
             game.increment_turn()
+            selection = random.randint(0, 9)
+                gv = GoogleVisionApi()
+                send_generic_template_message(sender_id,
+                                              'Selection #{selection}'.format(selection=selection+1), "https://fierce-tor-62927.herokuapp.com/static/{selection}.jpg".format(selection=selection),
+                                              "Don't use the words: " + ", ".join(gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection))))
         if type == 'message':
             text = request.data['entry'][0]['messaging'][0]['message']['text']
             timestamp = request.data['entry'][0]['time']
             sender_id = request.data['entry'][0]['messaging'][0]['sender']['id']
-            player = Game.objects.filter(session_id=sender_id)
+            # player = Game.objects.filter(owner_id=sender_id)
             if str(text).lower() == 'new game':
                 send_message(sender_id, 'How many teams?')
             elif str(text).lower() == 'end game':
-                game = Game.objects.get(owner_id=sender_id)
-                send_message(sender_id, game.evaluate_winner)
+                game = Game.objects.filter(owner_id=sender_id)
+                if game:
+                    game = game[0]
+                    send_message(sender_id, "And the winner is team #" + str(game.evaluate_winner()['team_score__max']))
             elif text.isdigit() and int(text) > 1:
                 no_players = int(text)
                 _create_game(sender_id, no_players)
@@ -137,7 +143,7 @@ def _create_game(owner_id, no_players):
     # Search for game with specific owner_id
     game = Game.objects.filter(owner_id=owner_id)
     if not game:
-        game = Game(owner=player, turn=0, no_players=no_players)
+        game = Game(owner_id=player.sesion_id, turn=0, no_players=no_players)
         game.save()
         for i in xrange(no_players):
             sb = Scoreboard(game=game, team_number=i, team_score=0)
