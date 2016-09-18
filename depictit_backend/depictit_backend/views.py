@@ -34,7 +34,7 @@ def webhook(request):
             gv = GoogleVisionApi()
             send_generic_template_message(sender_id,
                                           'some title', "https://fierce-tor-62927.herokuapp.com/static/{selection}.jpg".format(selection=selection),
-                                          ", ".join(gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection)), []))
+                                          ", ".join(gv.get_photo_desc_from_cloud_storage("gs://hack_zurich_bucket/{selection}.jpg".format(selection=selection))), [])
         return Response({"message": "OK!"}, status=200)
 
 

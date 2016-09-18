@@ -58,7 +58,7 @@ def send_generic_template_message(recipient_user_id, title, image_url, subtitle,
                       headers={
                           "Content-Type": "application/json"
                       },
-                      data=json.loads({
+                      data=json.dumps({
                           "recipient": {
                               "id": recipient_user_id
                           },
@@ -72,7 +72,6 @@ def send_generic_template_message(recipient_user_id, title, image_url, subtitle,
                                               "title": title,
                                               "image_url": image_url,
                                               "subtitle": subtitle,
-                                              "buttons": buttons
                                           }
                                       ]
                                   }
