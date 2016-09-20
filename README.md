@@ -1,5 +1,7 @@
 # DepictIt
 
+![depictit_logo](https://github.com/stevelaskaridis/depictit/blob/master/depictIt_logo.png)
+
 ## Description
 
 The idea behind this application is to create a game which uses Facebook [Messenger bot](https://messengerplatform.fb.com) as it's frontend and [Google Vision API](https://cloud.google.com/vision/) as its backend to emulate a taboo like game. The aim of the game is to describe to your team the picture without saying the words below it. The team with the most points wins.
